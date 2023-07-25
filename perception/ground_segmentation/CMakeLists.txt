@@ -25,9 +25,18 @@ ament_auto_add_library(ground_segmentation SHARED
   src/ray_ground_filter_nodelet.cpp
   src/ransac_ground_filter_nodelet.cpp
   src/scan_ground_filter_nodelet.cpp
+  src/travel_ground_filter_nodelet.cpp
 )
 
+if(${PCL_VERSION} GREATER_EQUAL 1.12.1)
+    find_package(Qhull REQUIRED)
+    target_link_libraries(ground_segmentation
+            QHULL::QHULL
+            )
+endif()
+
 target_link_libraries(ground_segmentation
+  Eigen3::Eigen
   ${Boost_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${PCL_LIBRARIES}
@@ -55,6 +64,11 @@ rclcpp_components_register_node(ground_segmentation
 rclcpp_components_register_node(ground_segmentation
   PLUGIN "ground_segmentation::ScanGroundFilterComponent"
   EXECUTABLE scan_ground_filter_node)
+
+# -- Travel Ground Filter --
+rclcpp_components_register_node(ground_segmentation
+  PLUGIN "ground_segmentation::TravelGroundFilterComponent"
+  EXECUTABLE travel_ground_filter_node)
 
 
 ament_auto_package(INSTALL_TO_SHARE

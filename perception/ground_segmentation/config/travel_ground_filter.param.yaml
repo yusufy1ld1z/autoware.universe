@@ -1,0 +1,36 @@
+/**:
+  ros__parameters:
+    additional_lidars: []
+    ransac_input_topics: []
+    use_single_frame_filter: False
+    use_time_series_filter: True
+
+    common_crop_box_filter:
+      parameters:
+        min_x: -50.0
+        max_x: 100.0
+        min_y: -50.0
+        max_y: 50.0
+        max_z: 2.5  # recommended 2.5 for non elevation_grid_mode
+        min_z: -2.5 # recommended 0.0 for non elevation_grid_mode
+        negative: False
+        
+    common_ground_filter:
+      plugin: "ground_segmentation::TravelGroundFilterComponent"
+      parameters:
+        min_range: 1.0
+        max_range: 80.0
+
+        resolution: 8.0
+        num_iter: 3
+        num_lpr: 5
+        num_min_pts: 10
+        th_seeds: 0.5
+        th_dist: 0.20
+        th_outlier: 1.0
+        th_normal: 0.940
+        th_weight: 200.0
+        th_lcc_normal: 0.05
+        th_lcc_planar: 0.15
+        th_obstacle: 1.0
+        refine_mode: true
