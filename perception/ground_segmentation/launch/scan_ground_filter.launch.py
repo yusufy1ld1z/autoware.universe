@@ -29,7 +29,9 @@ import yaml
 
 
 def launch_setup(context, *args, **kwargs):
-    vehicle_info_param_path = LaunchConfiguration("vehicle_info_param_file").perform(context)
+    vehicle_info_param_path = LaunchConfiguration("vehicle_info_param_file").perform(
+        context
+    )
     with open(vehicle_info_param_path, "r") as f:
         vehicle_info_param = yaml.safe_load(f)["/**"]["ros__parameters"]
 
@@ -85,7 +87,8 @@ def generate_launch_description():
         return DeclareLaunchArgument(name, default_value=default_value)
 
     default_vehicle_info_param = os.path.join(
-        get_package_share_directory("vehicle_info_util"), "config/vehicle_info.param.yaml"
+        get_package_share_directory("vehicle_info_util"),
+        "config/vehicle_info.param.yaml",
     )
 
     vehicle_info_param = DeclareLaunchArgument(

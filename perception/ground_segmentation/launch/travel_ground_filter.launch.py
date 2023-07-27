@@ -1,6 +1,5 @@
-
 import os
-
+from ament_index_python.packages import get_package_share_directory
 import launch
 from launch.actions import DeclareLaunchArgument
 from launch.actions import GroupAction
@@ -11,15 +10,18 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
-from launch_ros.substitutions import FindPackageShare
 import yaml
 
 
 def launch_setup(context, *args, **kwargs):
-    def load_composable_node_param(param_path):
-        with open(LaunchConfiguration(param_path).perform(context), "r") as f:
-            return yaml.safe_load(f)["/**"]["ros__parameters"]
-        
+    travel_filter_param_path = LaunchConfiguration(
+        "travel_ground_filter_param_path"
+    ).perform(context)
+    with open(travel_filter_param_path, "r") as f:
+        travel_filter_param = yaml.safe_load(f)["/**"]["ros__parameters"]
+
+    travel_filter_param = travel_filter_param["common_ground_filter"]["parameters"]
+
     nodes = [
         ComposableNode(
             package="ground_segmentation",
@@ -29,15 +31,15 @@ def launch_setup(context, *args, **kwargs):
                 ("input", LaunchConfiguration("input/pointcloud")),
                 ("output", LaunchConfiguration("output/pointcloud")),
             ],
-            parameters=[load_composable_node_param("travel_ground_filter_param_path")],
+            parameters=[travel_filter_param],
         ),
     ]
 
-    loader = LoadComposableNodes(
-        condition=LaunchConfigurationNotEquals("container", ""),
-        composable_node_descriptions=nodes,
-        target_container=LaunchConfiguration("container"),
-    )
+    # loader = LoadComposableNodes(
+    #     condition=LaunchConfigurationNotEquals("container", ""),
+    #     composable_node_descriptions=nodes,
+    #     target_container=LaunchConfiguration("container"),
+    # )
 
     container = ComposableNodeContainer(
         name="travel_ground_filter_container",
@@ -46,13 +48,13 @@ def launch_setup(context, *args, **kwargs):
         executable="component_container",
         composable_node_descriptions=nodes,
         output="screen",
-        condition=LaunchConfigurationEquals("container", ""),
+        # condition=LaunchConfigurationEquals("container", ""),
     )
 
     group = GroupAction(
         [
             container,
-            loader,
+            # loader,
         ]
     )
 
@@ -63,18 +65,27 @@ def generate_launch_description():
     def add_launch_arg(name: str, default_value=None):
         return DeclareLaunchArgument(name, default_value=default_value)
 
+    default_travel_filter_param_path = os.path.join(
+        get_package_share_directory(
+            "ground_segmentation"
+        ),  # autoware_launch'a tasiniyordu en son
+        "config/travel_ground_filter.param.yaml",
+    )
+
+    travel_ground_filter_param = DeclareLaunchArgument(
+        "travel_ground_filter_param_path",
+        default_value=default_travel_filter_param_path,
+        description="Path to config file for travel_ground_filter information",
+    )
+
     return launch.LaunchDescription(
         [
+            travel_ground_filter_param,
             add_launch_arg("container", ""),
-            add_launch_arg("input/pointcloud", "pointcloud"),
-            add_launch_arg("output/pointcloud", "no_ground/pointcloud"),
             add_launch_arg(
-                "travel_ground_filter_param_path",
-                [
-                    FindPackageShare("autoware_launch"),
-                    "/config/perception/obstacle_segmentation/ground_segmentation/travel_ground_filter.yaml",
-                ],
+                "input/pointcloud", "/sensing/lidar/concatenated/pointcloud"
             ),
+            add_launch_arg("output/pointcloud", "nonground"),
         ]
         + [OpaqueFunction(function=launch_setup)]
     )

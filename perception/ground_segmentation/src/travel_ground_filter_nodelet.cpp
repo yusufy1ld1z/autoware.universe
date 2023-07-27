@@ -224,8 +224,6 @@ void TravelGroundFilterComponent::initTriGridField(TriGridField &tgf_in) {
   rows_ = static_cast<int>((tgf_max_x - tgf_min_x) / TGF_RESOLUTION_);
   cols_ = static_cast<int>((tgf_max_y - tgf_min_y) / TGF_RESOLUTION_);
 
-  // std::cout << "ROWS and COLS " << rows_ << "\t" << cols_ << std::endl;
-
   empty_cloud_.clear();
   empty_cloud_.reserve(PTCLOUD_SIZE);
 
